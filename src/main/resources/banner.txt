@@ -9,3 +9,4 @@ __________               __           .__           .__   _____
 Version: ${application.version}
 AppTitle: ${application.title}
 Spring Boot Version: ${spring-boot.version}
+Test
