@@ -1,7 +1,7 @@
 <configuration scan="true" scanPeriod="10 seconds" debug="false">
     <springProfile name="default"><!-- no date, ansi colored, no file output -->
         <property name="PATTERN"
-                  value="%d{HH:mm:ss.SSS} [%X{user}] %highlight(%-5level) %highlight(%48.48logger) - %msg%n"/>
+                  value="%green(%d{HH:mm:ss.SSS}) [%X{user}] %highlight(%-5level) %highlight(%48.48logger) - %msg%n"/>
     </springProfile>
     <springProfile name="prod"><!-- no color, but file output -->
         <property name="PATTERN"
