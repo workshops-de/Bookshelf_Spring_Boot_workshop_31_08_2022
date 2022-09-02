@@ -15,9 +15,15 @@ public class BookRestController {
     private final BookService bookService;
 
     @GetMapping
-    public List<Book> getAllBooks() {
-        return bookService.getBooks();
+    public ResponseEntity<List<Book>> getAllBooks() {
+        List<Book> result = bookService.getBooks();
+        if (result == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }
     }
+
 
     @GetMapping("/{isbn}")
     public Book getSingleBook(@PathVariable String isbn) throws BookException {
@@ -32,6 +38,11 @@ public class BookRestController {
     @PostMapping("/search")
     public List<Book> searchBooks(@RequestBody BookSearchRequest bookSearchRequest) {
         return bookService.searchBooks(bookSearchRequest);
+    }
+
+    @PostMapping
+    public Book createBook(@RequestBody Book book) {
+        return bookService.createBook(book);
     }
 
     @ExceptionHandler(BookException.class)

@@ -48,6 +48,16 @@ public class BookService {
                 .toList();
     }
 
+
+    public Book createBook(Book book) {
+        return Book.builder()
+                .title(book.getTitle())
+                .description(book.getDescription())
+                .author(book.getAuthor())
+                .isbn(book.getIsbn())
+                .build();
+    }
+
     private boolean hasIsbn(Book book, String isbn) {
         return book.getIsbn().equals(isbn);
     }
