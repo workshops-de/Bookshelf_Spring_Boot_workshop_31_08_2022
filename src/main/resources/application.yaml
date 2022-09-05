@@ -1,0 +1,10 @@
+application:
+  title: Bookshelf
+  version: 0.0.1
+
+bookshelf:
+  some-number: 11
+  some-text: More information
+
+server:
+  port: 8080
