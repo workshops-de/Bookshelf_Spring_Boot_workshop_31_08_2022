@@ -16,8 +16,6 @@ class EnvironmentTest {
 
 	@Test
 	void verifyProdPort() {
-		System.out.println("Port: " + port);
-
 		assertEquals(8090, port);
 	}
 }

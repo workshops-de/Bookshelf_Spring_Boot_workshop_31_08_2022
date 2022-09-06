@@ -1,25 +1,31 @@
 package de.workshops.bookshelf.book;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
+import io.restassured.module.mockmvc.response.MockMvcResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.io.UnsupportedEncodingException;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 class BookRestControllerIntegrationTest {
 
@@ -31,6 +37,17 @@ class BookRestControllerIntegrationTest {
 
     @Autowired
     private BookRestController bookRestController;
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @LocalServerPort
+    private int port;
+
+    @BeforeEach
+    void setUp() {
+        RestAssured.port = port;
+    }
 
     @Test
     void bookListSizeAndContent() throws Exception {
@@ -75,17 +92,16 @@ class BookRestControllerIntegrationTest {
     }
 
     @Test
-    void newBookCanBeCreated() {
+    void newBookCanBeCreated() throws UnsupportedEncodingException, JsonProcessingException {
         RestAssuredMockMvc.standaloneSetup(bookRestController);
 
-        Book book = new Book(
-                "Domain-Driven Design: Tackling Complexity in the Heart of Software",
-                "This is not a book about specific technologies. It offers readers a systematic approach to domain-driven design, presenting an extensive set of design best practices, experience-based techniques, and fundamental principles that facilitate the development of software projects facing complex domains.",
-                "Eric Evans",
-                "978-0321125217"
-        );
+        Book book = new Book();
+        book.setTitle("Domain-Driven Design: Tackling Complexity in the Heart of Software");
+        book.setAuthor("Eric Evans");
+        book.setIsbn("978-0321125217");
+        book.setDescription("This is not a book about specific technologies. It offers readers a systematic approach to domain-driven design, presenting an extensive set of design best practices, experience-based techniques, and fundamental principles that facilitate the development of software projects facing complex domains.");
 
-        RestAssuredMockMvc.
+        MockMvcResponse mockMvcResponse = RestAssuredMockMvc.
                 given().
                 log().all().
                 body(book).
@@ -93,9 +109,15 @@ class BookRestControllerIntegrationTest {
                 accept(ContentType.JSON).
                 when().
                 post("/book").
+                andReturn();
+        mockMvcResponse.
                 then().
                 log().all().
                 statusCode(200).
                 body("author", equalTo("Eric Evans"));
+
+        String jsonPayload = mockMvcResponse.mvcResult().getResponse().getContentAsString();
+        Book newBook = objectMapper.readValue(jsonPayload, Book.class);
+        bookRepository.delete(newBook);
     }
 }
