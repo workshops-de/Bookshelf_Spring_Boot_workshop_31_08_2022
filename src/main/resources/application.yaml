@@ -33,3 +33,8 @@ spring:
       port: 27017
       database: bookshelf
 
+custom:
+  # Don't do this in an actual production application! Passwords should never be stored in files checked into version control.
+  # Use environment variables or a secrets management system instead.
+  admin:
+    password: $2a$10$7v/Mv2BAz5mg9tlBXFV3/ePEgEDRbp/BdavFTmOE78IrEiaDwMDfC # = 'password'
