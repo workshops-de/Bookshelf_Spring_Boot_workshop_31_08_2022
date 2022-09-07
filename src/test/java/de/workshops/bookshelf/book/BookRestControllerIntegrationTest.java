@@ -12,11 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.io.UnsupportedEncodingException;
 
@@ -41,6 +45,9 @@ class BookRestControllerIntegrationTest {
     @Autowired
     private BookRepository bookRepository;
 
+    @Autowired
+    private FilterChainProxy springSecurityFilterChain;
+
     @LocalServerPort
     private int port;
 
@@ -50,6 +57,7 @@ class BookRestControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     void bookListSizeAndContent() throws Exception {
         MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.get("/book"))
                 .andDo(MockMvcResultHandlers.print())
@@ -65,8 +73,15 @@ class BookRestControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     void isAuthorPresentWithRestAssuredMockMvc() {
         RestAssuredMockMvc.standaloneSetup(bookRestController);
+        RestAssuredMockMvc.standaloneSetup(
+                MockMvcBuilders
+                        .standaloneSetup(bookRestController)
+                        .apply(SecurityMockMvcConfigurers.springSecurity(springSecurityFilterChain))
+        );
+
         RestAssuredMockMvc.
                 given().
                 log().all().
@@ -79,9 +94,11 @@ class BookRestControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     void isAuthorPresentWithRestAssured() {
         RestAssured.
                 given().
+                auth().basic("dbUser", "workshops").
                 log().all().
                 when().
                 get("/book").
@@ -92,8 +109,14 @@ class BookRestControllerIntegrationTest {
     }
 
     @Test
+    @WithMockUser
     void newBookCanBeCreated() throws UnsupportedEncodingException, JsonProcessingException {
         RestAssuredMockMvc.standaloneSetup(bookRestController);
+        RestAssuredMockMvc.standaloneSetup(
+                MockMvcBuilders
+                        .standaloneSetup(bookRestController)
+                        .apply(SecurityMockMvcConfigurers.springSecurity(springSecurityFilterChain))
+        );
 
         Book book = new Book();
         book.setTitle("Domain-Driven Design: Tackling Complexity in the Heart of Software");

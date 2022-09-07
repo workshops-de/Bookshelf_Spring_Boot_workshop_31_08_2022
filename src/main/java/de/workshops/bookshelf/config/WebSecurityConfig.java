@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,7 +39,16 @@ public class WebSecurityConfig {
                                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults())
-                .formLogin(withDefaults())
+                .formLogin(httpSecurityFormLoginConfigurer -> httpSecurityFormLoginConfigurer.successHandler(
+                        (request, response, authentication) -> {
+                            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                            jdbcTemplate.update(
+                                    "UPDATE bookshelf_user SET lastlogin = NOW() WHERE username = ?",
+                                    userDetails.getUsername()
+                            );
+                            response.sendRedirect("/success");
+                        }
+                ))
                 .headers().frameOptions().disable().and()
                 .csrf().disable()
                 .build();
