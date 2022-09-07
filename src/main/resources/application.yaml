@@ -26,10 +26,3 @@ spring:
   h2:
     console:
       enabled: true
-
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: bookshelf
-
