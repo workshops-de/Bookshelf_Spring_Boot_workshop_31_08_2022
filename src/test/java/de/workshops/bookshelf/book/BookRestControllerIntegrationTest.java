@@ -111,7 +111,6 @@ class BookRestControllerIntegrationTest {
     @Test
     @WithMockUser
     void newBookCanBeCreated() throws UnsupportedEncodingException, JsonProcessingException {
-        RestAssuredMockMvc.standaloneSetup(bookRestController);
         RestAssuredMockMvc.standaloneSetup(
                 MockMvcBuilders
                         .standaloneSetup(bookRestController)
